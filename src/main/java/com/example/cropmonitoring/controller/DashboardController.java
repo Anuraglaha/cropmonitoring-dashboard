@@ -59,7 +59,10 @@ public class DashboardController {
 
     // --- AXON 2: Real Data Stream ---
     @GetMapping("/axon2/stream")
-    public SseEmitter streamLiveMcuData() {
+    public SseEmitter streamLiveMcuData(jakarta.servlet.http.HttpServletResponse response) {
+        response.setHeader("Cache-Control", "no-cache");
+        response.setHeader("X-Accel-Buffering", "no"); // Disables Nginx buffering on Render!
+        
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
         axon2Emitters.add(emitter);
 
