@@ -1,5 +1,5 @@
 # Stage 1: Build the application
-FROM gradle:8.5-jdk20 AS build
+FROM eclipse-temurin:20-jdk AS build
 WORKDIR /app
 # Copy the gradle configuration files
 COPY build.gradle settings.gradle ./
