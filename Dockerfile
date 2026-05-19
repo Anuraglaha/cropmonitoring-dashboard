@@ -7,6 +7,8 @@ COPY gradle ./gradle
 COPY gradlew ./
 # Copy the source code
 COPY src ./src
+# Fix permissions for the gradlew wrapper
+RUN chmod +x ./gradlew
 # Build the application (skipping tests for faster deployment)
 RUN ./gradlew build -x test
 
