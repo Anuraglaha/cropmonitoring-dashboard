@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UNDER-CANOPY crop monitoring</title>
+    <!-- Use Google Fonts for Modern Typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <header class="header">
+        <h1>UNDER-CANOPY crop monitoring</h1>
+        <p class="subtitle">Real-time agricultural insights & robotic simulation</p>
+    </header>
+
+    <main class="dashboard-container">
+        <!-- AXON 1 SECTION: Dummy Simulation -->
+        <section class="axon-section" id="axon1">
+            <div class="section-header">
+                <h2>AXON_1</h2>
+                <span class="badge simulation-badge">Simulation Mode</span>
+            </div>
+            
+            <div class="axon-content">
+                <!-- 1. Overview Row -->
+                <div class="overview-row">
+                    <div class="stat-card">
+                        <span class="stat-label">Active Robots</span>
+                        <span class="stat-value" id="a1-robots">--</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Temperature</span>
+                        <span class="stat-value" id="a1-temp">--°C</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Humidity</span>
+                        <span class="stat-value" id="a1-humidity">--%</span>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Battery</span>
+                        <span class="stat-value" id="a1-battery">--%</span>
+                        <div class="progress-bar-container"><div class="progress-bar" id="a1-battery-bar"></div></div>
+                    </div>
+                    <div class="stat-card">
+                        <span class="stat-label">Soil Moisture</span>
+                        <span class="stat-value" id="a1-soil">--%</span>
+                    </div>
+                </div>
+
+                <!-- Main Details Grid -->
+                <div class="details-grid">
+                    <!-- 2. Robot Status -->
+                    <div class="card status-card">
+                        <h3>Robot Status</h3>
+                        <div class="status-indicator">
+                            <div class="pulse-dot"></div>
+                            <span id="a1-status-text">Loading...</span>
+                        </div>
+                        <div class="mission-progress">
+                            <span class="stat-label">Mission Progress</span>
+                            <span class="stat-value small" id="a1-mission">--%</span>
+                            <div class="progress-bar-container"><div class="progress-bar" id="a1-mission-bar"></div></div>
+                        </div>
+                    </div>
+
+                    <!-- 4. Leaf Inspection Section -->
+                    <div class="card leaf-card">
+                        <h3>Leaf Inspection</h3>
+                        <div class="leaf-preview" id="a1-leaf-preview">
+                            <img id="a1-leaf-img" src="" alt="Leaf Preview">
+                            <div class="leaf-overlay">
+                                <span id="a1-leaf-status" class="leaf-status">Healthy</span>
+                            </div>
+                        </div>
+                        <div class="leaf-details">
+                            <div class="detail-row">
+                                <span class="label">Confidence:</span>
+                                <span class="value" id="a1-leaf-conf">--%</span>
+                            </div>
+                            <div class="detail-row">
+                                <span class="label">Details:</span>
+                                <span class="value" id="a1-leaf-desc">--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Field Overview Map -->
+                    <div class="card map-card">
+                        <h3>Field Overview Map</h3>
+                        <div class="map-container">
+                            <div class="map-grid"></div>
+                            <div class="charging-station" title="Charging Station (0,0)"></div>
+                            <div class="robot-dot" id="a1-robot-dot"></div>
+                        </div>
+                        <div class="coordinates">
+                            <span>Pos: <span id="a1-coord-x">0</span>, <span id="a1-coord-y">0</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <div class="right-column">
+            <!-- AXON 2 SECTION: Live NodeMCU Data -->
+            <section class="axon-section" id="axon2">
+            <div class="section-header">
+                <h2>AXON_2</h2>
+                <span class="badge live-badge">Live NodeMCU Data</span>
+            </div>
+
+            <div class="axon-content">
+                <div class="live-data-grid">
+                    <div class="live-card">
+                        <div class="icon-wrapper temp-icon">🌡️</div>
+                        <div class="live-info">
+                            <span class="stat-label">Temperature</span>
+                            <span class="stat-value" id="a2-temp">--°C</span>
+                        </div>
+                    </div>
+                    
+                    <div class="live-card">
+                        <div class="icon-wrapper soil-icon">💧</div>
+                        <div class="live-info">
+                            <span class="stat-label">Soil Moisture</span>
+                            <span class="stat-value" id="a2-soil">--%</span>
+                        </div>
+                    </div>
+
+                    <div class="live-card">
+                        <div class="icon-wrapper dist-icon">📡</div>
+                        <div class="live-info">
+                            <span class="stat-label">Object Distance</span>
+                            <span class="stat-value" id="a2-dist">-- cm</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="timestamp-container">
+                    <span class="label">Latest Update:</span>
+                    <span class="value" id="a2-timestamp">Waiting for data...</span>
+                </div>
+            </div>
+            </section>
+
+            <!-- Alerts and Notifications SECTION -->
+            <section class="axon-section alerts-section" id="alerts">
+                <div class="section-header">
+                    <h2>Alerts and Notifications</h2>
+                    <span class="badge danger-badge">Live Monitor</span>
+                </div>
+                <div class="axon-content alerts-content">
+                    <div class="alert-box">
+                        <span class="alert-number" id="infected-count">+0</span>
+                        <span class="alert-text">infected plants detected</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
