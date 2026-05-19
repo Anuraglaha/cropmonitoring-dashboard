@@ -10,6 +10,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -17,6 +18,8 @@ import java.util.concurrent.Executors;
 @RequestMapping("/api")
 @CrossOrigin(origins = "*") // Allow frontend to connect easily if served separately
 public class DashboardController {
+
+    private final CopyOnWriteArrayList<SseEmitter> axon2Emitters = new CopyOnWriteArrayList<>();
 
     private final SimulationService simulationService;
     private final NodeMcuDataRepository nodeMcuDataRepository;
@@ -58,28 +61,21 @@ public class DashboardController {
     @GetMapping("/axon2/stream")
     public SseEmitter streamLiveMcuData() {
         SseEmitter emitter = new SseEmitter(Long.MAX_VALUE);
-        ExecutorService sseMvcExecutor = Executors.newSingleThreadExecutor();
+        axon2Emitters.add(emitter);
 
-        sseMvcExecutor.execute(() -> {
+        emitter.onCompletion(() -> axon2Emitters.remove(emitter));
+        emitter.onTimeout(() -> axon2Emitters.remove(emitter));
+        emitter.onError((e) -> axon2Emitters.remove(emitter));
+
+        // Send the current latest data immediately upon connection
+        NodeMcuData latestData = nodeMcuDataRepository.findTopByOrderByTimestampDesc();
+        if (latestData != null) {
             try {
-                while (true) {
-                    NodeMcuData latestData = nodeMcuDataRepository.findTopByOrderByTimestampDesc();
-                    if (latestData != null) {
-                        SseEmitter.SseEventBuilder event = SseEmitter.event()
-                                .data(latestData)
-                                .id(String.valueOf(System.currentTimeMillis()))
-                                .name("axon2-data");
-                        emitter.send(event);
-                    }
-                    Thread.sleep(2000); // Check and send updates every 2 seconds
-                }
+                emitter.send(SseEmitter.event().data(latestData).id(String.valueOf(System.currentTimeMillis())).name("axon2-data"));
             } catch (Exception ex) {
                 emitter.completeWithError(ex);
             }
-        });
-
-        emitter.onCompletion(sseMvcExecutor::shutdown);
-        emitter.onTimeout(sseMvcExecutor::shutdown);
+        }
 
         return emitter;
     }
@@ -90,7 +86,20 @@ public class DashboardController {
         if (data.getTimestamp() == null) {
             data.setTimestamp(LocalDateTime.now());
         }
-        nodeMcuDataRepository.save(data);
+        NodeMcuData savedData = nodeMcuDataRepository.save(data);
+
+        // Broadcast the new data to all connected dashboard clients instantly
+        for (SseEmitter emitter : axon2Emitters) {
+            try {
+                emitter.send(SseEmitter.event()
+                        .data(savedData)
+                        .id(String.valueOf(System.currentTimeMillis()))
+                        .name("axon2-data"));
+            } catch (Exception ex) {
+                axon2Emitters.remove(emitter);
+            }
+        }
+
         return ResponseEntity.ok("Data saved successfully");
     }
 
